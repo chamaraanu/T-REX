@@ -130,18 +130,18 @@ contract MigrationContract is  Ownable {
         console.log("Start migration. token: %s", _token);
 
         // recover Claim Details from old contracts
-        ClaimDetails memory _claimDetails;
-        _claimDetails.claimTopics = IToken(_token).identityRegistry().topicsRegistry().getClaimTopics();
-
-        console.log("Claim topics");
-
-        _claimDetails.issuers = IToken(_token).identityRegistry().issuersRegistry().getTrustedIssuers();
+        IClaimIssuer[] memory trustedIssuers = IToken(_token).identityRegistry().issuersRegistry().getTrustedIssuers();
+        ClaimDetails memory _claimDetails = ClaimDetails(
+            IToken(_token).identityRegistry().topicsRegistry().getClaimTopics(),
+            trustedIssuers,
+            new uint256[][](trustedIssuers.length)
+        );
 
         console.log("Trusted issuers");
 
         for (uint256 i = 0; i < (_claimDetails.issuers).length; i++) {
             _claimDetails.issuerClaims[i] = IToken(_token).identityRegistry().issuersRegistry()
-            .getTrustedIssuerClaimTopics(_claimDetails.issuers[i]);
+                .getTrustedIssuerClaimTopics(_claimDetails.issuers[i]);
         }
 
         console.log("Migration of claims completed.");
