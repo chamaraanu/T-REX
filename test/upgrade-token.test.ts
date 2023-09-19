@@ -17,7 +17,7 @@ describe.only('MigrationContract', () => {
     const oldTokenImplementationAuthority = await ethers.deployContract('LegacyIA', [oldTokenImplementation.address], deployer);
     const oldCompliance = await ethers.deployContract('DefaultCompliance', deployer);
     const oldTrustedIssuersRegistry = await ethers.deployContract('TrustedIssuersRegistryLegacy', deployer);
-    //await oldTrustedIssuersRegistry.addTrustedIssuer(claimIssuerContract.address, [42, 666]);
+    await oldTrustedIssuersRegistry.addTrustedIssuer(claimIssuerContract.address, [42, 666]);
 
     const oldClaimTopicsRegistry = await ethers.deployContract('ClaimTopicsRegistryLegacy', deployer);
     await oldClaimTopicsRegistry.addClaimTopic(42);
