@@ -3,7 +3,11 @@ import {ethers} from "hardhat";
 import OnchainID from "@onchain-id/solidity";
 import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
 
-export async function deployIdentityProxy(implementationAuthority: Contract['address'], managementKey: string, signer: Signer) {
+export async function deployIdentityProxy(
+  implementationAuthority: Contract['address'],
+  managementKey: string,
+  signer: Signer,
+) {
   const identity = await new ethers.ContractFactory(OnchainID.contracts.IdentityProxy.abi, OnchainID.contracts.IdentityProxy.bytecode, signer).deploy(
     implementationAuthority,
     managementKey,
@@ -17,6 +21,22 @@ export async function deployFullSuiteFixture() {
   const claimIssuerSigningKey = ethers.Wallet.createRandom();
   const aliceActionKey = ethers.Wallet.createRandom();
 
+  // ONCHAINID
+  const Identity = await ethers.getContractFactory('Identity');
+  const identityImplementation = await Identity.connect(deployer).deploy(deployer.address, true);
+
+  const ImplementationAuthority = await ethers.getContractFactory(
+    'ImplementationAuthority'
+  );
+  const implementationAuthority = await ImplementationAuthority.connect(deployer).deploy(
+    identityImplementation.address,
+  );
+
+  const IdentityFactory = await ethers.getContractFactory('IdFactory');
+  const identityFactory = await IdentityFactory.connect(deployer).deploy(
+    implementationAuthority.address,
+  );
+
   // Deploy implementations
   const claimTopicsRegistryImplementation = await ethers.deployContract('ClaimTopicsRegistry', deployer);
   const trustedIssuersRegistryImplementation = await ethers.deployContract('TrustedIssuersRegistry', deployer);
@@ -24,11 +44,6 @@ export async function deployFullSuiteFixture() {
   const identityRegistryImplementation = await ethers.deployContract('IdentityRegistry', deployer);
   const modularComplianceImplementation = await ethers.deployContract('ModularCompliance', deployer);
   const tokenImplementation = await ethers.deployContract('Token', deployer);
-  const identityImplementation = await new ethers.ContractFactory(
-    OnchainID.contracts.Identity.abi,
-    OnchainID.contracts.Identity.bytecode,
-    deployer,
-  ).deploy(deployer.address, true);
 
   const identityImplementationAuthority = await new ethers.ContractFactory(
     OnchainID.contracts.ImplementationAuthority.abi,
@@ -234,6 +249,7 @@ export async function deployFullSuiteFixture() {
     },
     factories: {
       trexFactory,
+      identityFactory,
     },
     implementations: {
       identityImplementation,

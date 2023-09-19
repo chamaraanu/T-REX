@@ -76,6 +76,7 @@ import "../proxy/TrustedIssuersRegistryProxy.sol";
 import "../proxy/ModularComplianceProxy.sol";
 import "@onchain-id/solidity/contracts/factory/IIdFactory.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "hardhat/console.sol";
 
 
 contract MigrationContract is  Ownable {
@@ -126,14 +127,24 @@ contract MigrationContract is  Ownable {
         require(Ownable(_token).owner() == address(this), "migration contract needs ownership");
         string memory _salt = Strings.toHexString(_token);
 
+        console.log("Start migration. token: %s", _token);
+
         // recover Claim Details from old contracts
         ClaimDetails memory _claimDetails;
         _claimDetails.claimTopics = IToken(_token).identityRegistry().topicsRegistry().getClaimTopics();
+
+        console.log("Claim topics");
+
         _claimDetails.issuers = IToken(_token).identityRegistry().issuersRegistry().getTrustedIssuers();
+
+        console.log("Trusted issuers");
+
         for (uint256 i = 0; i < (_claimDetails.issuers).length; i++) {
             _claimDetails.issuerClaims[i] = IToken(_token).identityRegistry().issuersRegistry()
             .getTrustedIssuerClaimTopics(_claimDetails.issuers[i]);
         }
+
+        console.log("Migration of claims completed.");
 
         ITrustedIssuersRegistry tir = ITrustedIssuersRegistry(_deployTIR(_salt, _implementationAuthority));
         IClaimTopicsRegistry ctr = IClaimTopicsRegistry(_deployCTR(_salt, _implementationAuthority));
@@ -144,9 +155,14 @@ contract MigrationContract is  Ownable {
         }
         else {
             irs = IIdentityRegistryStorage(IIdentityRegistry(IToken(_token).identityRegistry()).identityStorage());
+            irs.unbindIdentityRegistry(address(IToken(_token).identityRegistry()));
+
+            console.log("old IR unbound from IRS");
         }
         IIdentityRegistry ir = IIdentityRegistry(_deployIR(_salt, _implementationAuthority, address(tir),
             address(ctr), address(irs)));
+
+        console.log("New IR deployed");
 
         for (uint256 i = 0; i < (_claimDetails.claimTopics).length; i++) {
             ctr.addClaimTopic(_claimDetails.claimTopics[i]);
@@ -155,14 +171,26 @@ contract MigrationContract is  Ownable {
             tir.addTrustedIssuer(IClaimIssuer((_claimDetails).issuers[i]), _claimDetails.issuerClaims[i]);
         }
         irs.bindIdentityRegistry(address(ir));
-        irs.unbindIdentityRegistry(address(IToken(_token).identityRegistry()));
+
+        console.log("new IR bound to IRS");
+
+        console.log("Migration of IR completed.");
+
         AgentRole(address(ir)).addAgent(_token);
+
+        console.log("Token added as IR agent.");
+
         for (uint256 i = 0; i < _irAgents.length; i++) {
             AgentRole(address(ir)).addAgent(_irAgents[i]);
         }
         mc.bindToken(_token);
 
+        console.log("New MC deployed");
+
         address _tokenID = IIdFactory(_idFactory).createTokenIdentity(_token, _tokenOwner, _salt);
+
+        console.log("New token OID deployed");
+
         IToken(_token).setOnchainID(_tokenID);
         IToken(_token).setCompliance(address(mc));
         IToken(_token).setIdentityRegistry(address(ir));
