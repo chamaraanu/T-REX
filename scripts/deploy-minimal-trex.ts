@@ -23,11 +23,17 @@ export async function deployIdentityProxy(implementationAuthority: Contract['add
 }
 
 /**
- * Main function for deploying contracts and saving their addresses.
- * Orchestrates the deployment process and saves the contract addresses.
+ * Minimal TREX token deployment
+ * with reusing dependency contracts (as platform maintained dependencies)
+ * 
+ * identityRegistryStorage	old	old	old	old	new
+ * defaultCompliance  old	old	old	new	new
+ * identityRegistry	  old	old	new	old	old
+ * tokenOID	          old	new	old	old	old
+ * token	            X	  X	  X	  Can	Can
+ * bindIdentityRegistry				    X	  Can
  */
 async function main() {
-  // let provider = ethers.getDefaultProvider();
 
   let [deployer, tokenIssuer, tokenAgent, tokenAdmin, claimIssuer, aliceWallet, bobWallet, charlieWallet, claimIssuerSigningKey, aliceActionKey] = await ethers.getSigners();
   console.log("Deployer is the deployer: ", deployer.address)
@@ -45,26 +51,31 @@ async function main() {
   const trexImplementationAuthority = await ethers.getContractAt("TREXImplementationAuthority","0xf7dc73894F037ddC87fa327b0912141b3d881278")
   const claimTopicsRegistry = await ethers.getContractAt("ClaimTopicsRegistry","0xB2dcF08161e962A71c4940Ff3b5EfBaFb71CeE67")
   const trustedIssuersRegistry = await ethers.getContractAt("TrustedIssuersRegistry","0xA03019013cD4c622981A8F03bEe81522A714C067")
-  const identityRegistryStorage = await ethers.getContractAt("IdentityRegistryStorage","0x5e8f7FC28c3090A437B9066e299C8b4b4203F1B3")
+  // const identityRegistryStorage = await ethers.getContractAt("IdentityRegistryStorage","0x5e8f7FC28c3090A437B9066e299C8b4b4203F1B3")
   // const defaultCompliance = await ethers.getContractAt("DefaultCompliance","0x63aF369E38E56B26695CFE334fCA62FF144DD52F")
-  // const identityRegistry = await ethers.getContractAt("IdentityRegistry","0x41B07810A74cD65D26823A6b0282DA39B0b620A3")
-  // const tokenOID = await ethers.getContractAt("Identity","0xacf8b615918263fFC35B5524c3e1b2303A1118eE")
+  const identityRegistry = await ethers.getContractAt("IdentityRegistry","0x41B07810A74cD65D26823A6b0282DA39B0b620A3")
+  const tokenOID = await ethers.getContractAt("Identity","0xacf8b615918263fFC35B5524c3e1b2303A1118eE")
 
   // Deploy implementations
 
+  const identityRegistryStorage = await ethers
+    .deployContract('IdentityRegistryStorageProxy', [trexImplementationAuthority.address], deployer)
+    .then(async (proxy) => ethers.getContractAt('IdentityRegistryStorage', proxy.address));
+  console.log("identityRegistryStorage: ", identityRegistryStorage.address)
+
   const defaultCompliance = await ethers.deployContract('DefaultCompliance', deployer);
   console.log("defaultCompliance: ", defaultCompliance.address)
-  const identityRegistry = await ethers
-    .deployContract(
-      'IdentityRegistryProxy',
-      [trexImplementationAuthority.address, trustedIssuersRegistry.address, claimTopicsRegistry.address, identityRegistryStorage.address],
-      deployer,
-    )
-    .then(async (proxy) => ethers.getContractAt('IdentityRegistry', proxy.address));
-  console.log("identityRegistry: ", identityRegistry.address)
+  // const identityRegistry = await ethers
+  //   .deployContract(
+  //     'IdentityRegistryProxy',
+  //     [trexImplementationAuthority.address, trustedIssuersRegistry.address, claimTopicsRegistry.address, identityRegistryStorage.address],
+  //     deployer,
+  //   )
+  //   .then(async (proxy) => ethers.getContractAt('IdentityRegistry', proxy.address));
+  // console.log("identityRegistry: ", identityRegistry.address)
 
-  const tokenOID = await deployIdentityProxy(identityImplementationAuthority.address, tokenIssuer.address, deployer);
-  console.log("tokenOID: ", tokenOID.address)
+  // const tokenOID = await deployIdentityProxy(identityImplementationAuthority.address, tokenIssuer.address, deployer);
+  // console.log("tokenOID: ", tokenOID.address)
 
   const tokenName = 'TREXDINO2';
   const tokenSymbol = 'TREX2';
@@ -86,8 +97,8 @@ async function main() {
     .then(async (proxy) => ethers.getContractAt('Token', proxy.address)); 
   console.log("token: ", token.address)
 
-  // await identityRegistryStorage.connect(deployer).bindIdentityRegistry(identityRegistry.address);
-  // console.log("identityRegistryStorage.bindIdentityRegistry")
+  await identityRegistryStorage.connect(deployer).bindIdentityRegistry(identityRegistry.address);
+  console.log("identityRegistryStorage.bindIdentityRegistry")
 
   await token.connect(deployer).addAgent(tokenAgent.address);
   console.log("token.addAgent")

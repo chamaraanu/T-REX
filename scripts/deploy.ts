@@ -23,8 +23,9 @@ export async function deployIdentityProxy(implementationAuthority: Contract['add
 }
 
 /**
- * Main function for deploying contracts and saving their addresses.
- * Orchestrates the deployment process and saves the contract addresses.
+ * Full TREX token deployment
+ * including the dependency contracts
+ * which will be used as platform maintained dependencies
  */
 async function main() {
   // let provider = ethers.getDefaultProvider();
