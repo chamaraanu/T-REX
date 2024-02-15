@@ -1,5 +1,4 @@
 import { BigNumber, Contract, Signer } from 'ethers';
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { ethers } from "hardhat";
 import { loadFixture } from '@nomicfoundation/hardhat-network-helpers';
 import OnchainID from '@onchain-id/solidity';
@@ -7,7 +6,13 @@ import OnchainID from '@onchain-id/solidity';
 import { saveAddress } from "./helpers/saveAddress";
 import { agent } from '../typechain-types/contracts/roles/permissioning';
 
-
+/**
+ * Deploying the identity proxy for each individual to be able to participate in the token functionality
+ * @param implementationAuthority Implementation Authority
+ * @param managementKey Management Key
+ * @param signer Signer
+ * @returns 
+ */
 export async function deployIdentityProxy(implementationAuthority: Contract['address'], managementKey: string, signer: Signer) {
   const identity = await new ethers.ContractFactory(OnchainID.contracts.IdentityProxy.abi, OnchainID.contracts.IdentityProxy.bytecode, signer).deploy(
     implementationAuthority,
