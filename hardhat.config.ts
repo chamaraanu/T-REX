@@ -31,14 +31,13 @@ const config: HardhatUserConfig = {
     },
   },
   networks:{
-    hardhat:{
-      initialBaseFeePerGas:0,
-      gasPrice:0,
-      chainId:1337,
-      accounts:{
-        count:20,
+    hardhat: {
+      forking:{
+          enabled: true,
+          url: `https://sepolia.infura.io/v3/${INFURA_SEPOLIA_API_KEY}`,
       },
-    },
+      chainId: 31337
+  },
 
     sepolia: {
       url: `https://sepolia.infura.io/v3/${INFURA_SEPOLIA_API_KEY}`,

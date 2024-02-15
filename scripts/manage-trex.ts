@@ -67,18 +67,18 @@ async function main() {
     //     .addClaim(claimForCharlie.topic, claimForCharlie.scheme, claimForCharlie.issuer, claimForCharlie.signature, claimForCharlie.data, '');
     // console.log("charlieIdentity.addClaim")
 
-    // await token.connect(aliceWallet).transfer(charlieWallet.address, 100)
-    // console.log("Alice transfered 100 to Charlie")
+    await token.connect(aliceWallet).transfer(charlieWallet.address, 10)
+    console.log("Alice transfered 10 to Charlie")
 
-    // await token.connect(aliceWallet).approve(tokenAgent.address, 100)
-    // await token.connect(tokenAgent).transferFrom(aliceWallet.address, charlieWallet.address, 100)
-    // console.log("Token Agent transferFrom Alice to Charlie, Done")
+    await token.connect(aliceWallet).approve(bobWallet.address, 10)
+    await token.connect(bobWallet).transferFrom(aliceWallet.address, charlieWallet.address, 10)
+    console.log("Token Agent transferFrom Alice to Charlie, Done")
 
-    // await token.connect(tokenAgent).forcedTransfer(aliceWallet.address, charlieWallet.address, 50)
-    // console.log("TokenAgent did a forced tranfer of 50 from Alice's wallet to Charlie's wallet")
+    await token.connect(tokenAgent).forcedTransfer(aliceWallet.address, charlieWallet.address, 5)
+    console.log("TokenAgent did a forced tranfer of 5 from Alice's wallet to Charlie's wallet")
 
-    // await token.connect(tokenAgent).burn(aliceWallet.address, 100);
-    // console.log("TokenAgent burned 100 TREX from Alice's wallet")
+    await token.connect(tokenAgent).burn(aliceWallet.address, 1);
+    console.log("TokenAgent burned 1 TREX from Alice's wallet")
 }
 
 
