@@ -35,6 +35,7 @@ async function main() {
     console.log("ClaimIssuerSigningKey: ", claimIssuerSigningKey.address)
     console.log("AliceActionKey: ", aliceActionKey.address)
 
+    const token = await ethers.getContractAt("Token", "0x435E9D9f286c6bC033B10942FF8B2c3940b2fD45")
     const claimIssuerContract = await ethers.getContractAt("ClaimIssuer", "0x9eC35B0611221e290470D3cA864EdC4Bd3CCa721")
     const charlieIdentity = await ethers.getContractAt("Identity", "0x35df4EDc421fc0e0095B9CdFd298fa478721b695")
 
@@ -72,6 +73,9 @@ async function main() {
     // await token.connect(aliceWallet).approve(tokenAgent.address, 100)
     // await token.connect(tokenAgent).transferFrom(aliceWallet.address, charlieWallet.address, 100)
     // console.log("Token Agent transferFrom Alice to Charlie, Done")
+
+    // await token.connect(tokenAgent).forcedTransfer(aliceWallet.address, charlieWallet.address, 50)
+    // console.log("TokenAgent did a forced tranfer of 50 from Alice's wallet to Charlie's wallet")
 
     // await token.connect(tokenAgent).burn(aliceWallet.address, 100);
     // console.log("TokenAgent burned 100 TREX from Alice's wallet")
