@@ -74,6 +74,9 @@ async function main() {
     .then(async (proxy) => ethers.getContractAt('Token', proxy.address)); 
   console.log("token: ", token.address)
 
+  // If different wallets needs to be registered for different tokens, 
+  // then different identity registry and identity registry storage needs to be deployed and the identities of the wallets needs to be registered
+
   await token.connect(deployer).addAgent(tokenAgent.address);
   console.log("token.addAgent")
   console.log("Is Agent?", await token.connect(deployer).isAgent(tokenAgent.address))
