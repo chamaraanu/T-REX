@@ -277,20 +277,6 @@ async function main() {
 
   await token.connect(tokenAgent).unpause();
   console.log("token unpause")
-
-  // Save contract addresses to JSON
-  // let jsonData = {
-  //   "claimTopicsRegistryImplementation": claimTopicsRegistryImplementation,
-  //   "trustedIssuersRegistryImplementation": trustedIssuersRegistryImplementation,
-  //   "identityRegistryStorageImplementation": identityRegistryStorageImplementation,
-  //   "identityRegistryImplementation": identityRegistryImplementation,
-  //   "modularComplianceImplementation": modularComplianceImplementation,
-  //   "tokenImplementation":tokenImplementation,
-  //   "identityImplementation":identityImplementation
-  // };
-
-  // // Save JSON object containing contract addresses
-  // saveAddress(jsonData);
 }
 
 
