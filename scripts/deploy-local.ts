@@ -112,6 +112,7 @@ async function main() {
       deployer,
     )
     .then(async (proxy) => ethers.getContractAt('IdentityRegistry', proxy.address));
+  console.log("identityRegistry", identityRegistry.address)
 
   const tokenOID = await deployIdentityProxy(identityImplementationAuthority.address, tokenIssuer.address, deployer);
   const tokenName = 'TREXDINO';
@@ -133,11 +134,11 @@ async function main() {
     )
     .then(async (proxy) => ethers.getContractAt('Token', proxy.address)); 
 
-  console.log("token ", token.address)
+  console.log("token", token.address)
 
   console.log("Deploying agentManager")
   const agentManager = await ethers.deployContract('AgentManager', [token.address], tokenAgent);
-  console.log("agentManager ", agentManager.address)
+  console.log("agentManager", agentManager.address)
 
   await identityRegistryStorage.connect(deployer).bindIdentityRegistry(identityRegistry.address);
 
@@ -193,9 +194,10 @@ async function main() {
     ),
   );
 
-  await aliceIdentity
+  const aliceClaimId = await aliceIdentity
     .connect(aliceWallet)
     .addClaim(claimForAlice.topic, claimForAlice.scheme, claimForAlice.issuer, claimForAlice.signature, claimForAlice.data, '');
+  // console.log("aliceClaimId", aliceClaimId)
 
   const claimForBob = {
     data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes('Some claim public data.')),
@@ -226,29 +228,6 @@ async function main() {
 
   await token.connect(tokenAgent).unpause();
 
-
-  console.log(claimTopicsRegistryImplementation.address)
-  console.log(trustedIssuersRegistryImplementation.address)
-  console.log(identityRegistryStorageImplementation.address)
-  console.log(identityRegistryImplementation.address)
-  console.log(modularComplianceImplementation.address)
-  console.log(tokenImplementation.address)
-  console.log(identityImplementation.address)
-  console.log(token.address)
-
-  // Save contract addresses to JSON
-  // let jsonData = {
-  //   "claimTopicsRegistryImplementation": claimTopicsRegistryImplementation,
-  //   "trustedIssuersRegistryImplementation": trustedIssuersRegistryImplementation,
-  //   "identityRegistryStorageImplementation": identityRegistryStorageImplementation,
-  //   "identityRegistryImplementation": identityRegistryImplementation,
-  //   "modularComplianceImplementation": modularComplianceImplementation,
-  //   "tokenImplementation":tokenImplementation,
-  //   "identityImplementation":identityImplementation
-  // };
-
-  // // Save JSON object containing contract addresses
-  // saveAddress(jsonData);
 }
 
 
