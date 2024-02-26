@@ -23,7 +23,7 @@ export async function deployIdentityProxy(implementationAuthority: Contract['add
 }
 
 /**
- * Full TREX token deployment
+ * Deployment of ONCHIAINID for Charlie
  * including the dependency contracts
  * which will be used as platform maintained dependencies
  */
@@ -31,20 +31,21 @@ async function main() {
   // let provider = ethers.getDefaultProvider();
 
   let [deployer, tokenIssuer, tokenAgent, tokenAdmin, claimIssuer, aliceWallet, bobWallet, charlieWallet, claimIssuerSigningKey, aliceActionKey] = await ethers.getSigners();
-  console.log("Deployer is the deployer: ", deployer.address)
-  console.log("TokenIssuer: ", tokenIssuer.address)
+  console.log("Deployer: ", deployer.address)
+  // console.log("TokenIssuer: ", tokenIssuer.address)
   console.log("TokenAgent: ", tokenAgent.address)
-  console.log("TokenAdmin: ", tokenAdmin.address)
-  console.log("ClaimIssuer: ", claimIssuer.address)
-  console.log("AliceWallet: ", aliceWallet.address)
-  console.log("BobWallet: ", bobWallet.address)
+  // console.log("TokenAdmin: ", tokenAdmin.address)
+  // console.log("ClaimIssuer: ", claimIssuer.address)
+  // console.log("AliceWallet: ", aliceWallet.address)
+  // console.log("BobWallet: ", bobWallet.address)
   console.log("CharlieWallet: ", charlieWallet.address)
   console.log("ClaimIssuerSigningKey: ", claimIssuerSigningKey.address)
   console.log("AliceActionKey: ", aliceActionKey.address)
 
-  const identityImplementationAuthority = await ethers.getContractAt("ImplementationAuthority","0x3191ec3FEBf6F3D26801544D1fd116b53d12b10A")
-  const identityRegistry = await ethers.getContractAt("IdentityRegistry","0x776d529b4c7Cd0c423324eE1196966AFc1b5c67B")
-  const claimIssuerContract = await ethers.getContractAt("ClaimIssuer","0x79A88f4C29B5aAa6E664073fCac592be81901e73")
+  const identityImplementationAuthority = await ethers.getContractAt("ImplementationAuthority","0x3191ec3FEBf6F3D26801544D1fd116b53d12b10A") // Change at every dependency deployment
+  const identityRegistry = await ethers.getContractAt("IdentityRegistry","0x41B07810A74cD65D26823A6b0282DA39B0b620A3") // Change at every dependency deployment
+  const claimIssuerContract = await ethers.getContractAt("ClaimIssuer","0x9eC35B0611221e290470D3cA864EdC4Bd3CCa721") // Change at every dependency deployment
+  // const charlieIdentity = await ethers.getContractAt("Identity","0x069F06EE52Ec947AB3ec56F46bF9DfDa62259ADA")
   
   const claimTopics = [ethers.utils.id('CLAIM_TOPIC')];
 
@@ -53,12 +54,12 @@ async function main() {
   await charlieIdentity
     .connect(charlieWallet)
     .addKey(ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['address'], [aliceActionKey.address])), 2, 1);
-  console.log("charlieIdentity.addKey")
+  console.log("charlieIdentity.addKey aliceActionKey")
 
   console.log("IsAgent ", await identityRegistry.connect(deployer).isAgent(tokenAgent.address)); 
 
-  await identityRegistry.connect(tokenAgent).registerIdentity(charlieWallet.address, charlieIdentity.address, 36)
-  // await identityRegistry.connect(tokenAgent).updateIdentity(charlieWallet.address, charlieIdentity.address)
+  // await identityRegistry.connect(tokenAgent).registerIdentity(charlieWallet.address, charlieIdentity.address, 42)
+  await identityRegistry.connect(tokenAgent).updateIdentity(charlieWallet.address, charlieIdentity.address)
 
   const claimForCharlie = {
     data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes('Some claim public data.')),
@@ -77,12 +78,11 @@ async function main() {
   );
   console.log("claimForCharlie.signature")
 
-  // await aliceIdentity
-  //   .connect(aliceWallet)
-  //   .addClaim(claimForAlice.topic, claimForAlice.scheme, claimForAlice.issuer, claimForAlice.signature, claimForAlice.data, '');
-  // console.log("aliceIdentity.addClaim")
-
-  console.log(await claimIssuerContract.connect(tokenAgent).isClaimValid(charlieIdentity.address, claimForCharlie.topic, claimForCharlie.signature, claimForCharlie.data));
+  console.log("charlieIdentity isClaimValid" ,await claimIssuerContract.connect(tokenAgent).isClaimValid(charlieIdentity.address, claimForCharlie.topic, claimForCharlie.signature, claimForCharlie.data));
+  await charlieIdentity
+    .connect(charlieWallet)
+    .addClaim(claimForCharlie.topic, claimForCharlie.scheme, claimForCharlie.issuer, claimForCharlie.signature, claimForCharlie.data, '');
+  console.log("charlieIdentity.addClaim")
 }
 
 
